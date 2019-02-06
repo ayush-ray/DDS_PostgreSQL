@@ -42,49 +42,34 @@ def loadratings(ratingstablename, ratingsfilepath, openconnection):
 
 
 def rangepartition(ratingstablename, numberofpartitions, openconnection):
-    #sets a upper bound for each range
+    cur = openconnection.cursor()
     rating_range = 5.0 / numberofpartitions
+    current = 0
+    next = rating_range
 
-    range = rating_range
+    for i in range(0, numberofpartitions):
+	
+		# create as many range partitions as are the number of partitions
+        cur.execute("DROP TABLE IF EXISTS range_part" + str(i))
+        cur.execute("CREATE TABLE range_part" + str(i) + "(UserID int, MovieID int, Rating float)")
+        cur.execute("INSERT INTO range_part" + str(i) + " (UserID, MovieID, Rating) SELECT * FROM " +\
+                ratingstablename + " WHERE Rating" + ">=" + str(current) + " AND Rating" + "<=" + str(next))
 
-    partitions = numberofpartitions
+        # cur.execute("select * from range_part" + str(i))
+        # print(cur.fetchall())
 
-    count = 0
+        current += rating_range + 0.01
+        next += rating_range
 
-    cursor = openconnection.cursor()
-
-    i = 0
-    while i < numberofpartitions:
-
-        #create as many range partitions as are the number of partitions
-        cursor.execute('DROP TABLE IF EXISTS range_part' + str(i))
-        query4 = "CREATE TABLE range_part" + str(i) + "(UserID int, MovieID int, Rating float)"
-
-        cursor.execute(query4)
-
-        if i==0:
-            query6 ="INSERT INTO range_part" + str(i) + "(UserID, MovieID, Rating)" + "SELECT * FROM " + ratingstablename + " WHERE Rating" + "<=" + str(rating_range)+ " AND Rating" + ">=" + str(count)
-            cursor.execute(query6)
-
-        else:
-            query6 = "INSERT INTO range_part" + str(i) + "(UserID, MovieID, Rating)" + "SELECT * FROM " + ratingstablename + " WHERE Rating" + "<=" + str(rating_range) + " AND Rating" + ">" + str(count)
-            cursor.execute(query6)
-
-
-        count = rating_range
-        rating_range += range
-
-        i += 1
-
-    #stores the upper bound for range and the number of partitions to be used for range insertion
-    cursor.execute('DROP TABLE IF EXISTS PART')
-    cursor.execute('CREATE TABLE PART (RatingRange int, Numberofpartitions int)')
-    cursor.execute('INSERT INTO PART (RatingRange, Numberofpartitions) VALUES (' + str(range) + ', ' + str(partitions) + ')')
+    # stores the upper bound for range and the number of partitions to be used for range insertion
+    cur.execute("DROP TABLE IF EXISTS RANGE_PARTITION_INFO")
+    cur.execute("CREATE TABLE RANGE_PARTITION_INFO (Rating_Range real, Number_Of_Partitions int)")
+    cur.execute(
+        "INSERT INTO RANGE_PARTITION_INFO (Rating_Range, Number_Of_Partitions) VALUES (" +
+        str(rating_range) + ', ' + str(numberofpartitions) + ')')
 
     openconnection.commit()
-
-    cursor.close()
-
+    cur.close()
     pass
 
 
@@ -94,3 +79,4 @@ create_db("trial_a1_1")
 con = getopenconnection()
 con.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
 loadratings("ratings", "/home/user/Downloads/test_data.dat", con)
+rangepartition("ratings", 3, con)
