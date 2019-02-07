@@ -72,6 +72,14 @@ def rangepartition(ratingstablename, numberofpartitions, openconnection):
     cur.close()
     pass
 
+def rangeinsert(ratingstablename, userid, itemid, rating, openconnection):
+	cur = openconnection.cursor()
+
+    cur.execute("INSERT INTO " + ratingstablename + " VALUES(" +
+                str(userid) + "," + str(itemid) + "," + str(rating) + ")")
+
+    cur.execute("SELECT * FROM RANGE_PARTITION_INFO")
+    range_table = cur.fetchall()
 
 
 # Function calls
