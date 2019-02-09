@@ -80,6 +80,21 @@ def rangeinsert(ratingstablename, userid, itemid, rating, openconnection):
 
     cur.execute("SELECT * FROM RANGE_PARTITION_INFO")
     range_table = cur.fetchall()
+	
+	rating_range = range_table[0][0]
+    lower_range = 0
+    partition = 0
+
+    while lower_range < rating:
+        lower_range += rating_range
+        partition += 1
+
+    cur.execute("INSERT INTO range_part" + str(partition) + " VALUES (" +
+                str(userid) + "," + str(itemid) + "," + str(rating) + ")")
+
+    openconnection.commit()
+    cur.close()
+    pass
 
 
 # Function calls
