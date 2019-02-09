@@ -85,7 +85,7 @@ def rangeinsert(ratingstablename, userid, itemid, rating, openconnection):
     lower_range = 0
     partition = 0
 
-    while lower_range < rating:
+    while lower_range+rating_range < rating:
         lower_range += rating_range
         partition += 1
 
