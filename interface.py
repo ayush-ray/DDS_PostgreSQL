@@ -117,6 +117,16 @@ def roundrobinpartition(ratingstablename, numberofpartitions, openconnection):
         if j >= numberofpartitions:
             j = 0
 
+    if j == 0:
+        last_inserted_partition = numberofpartitions - 1
+    else:
+        last_inserted_partition = j - 1
+
+    cur.execute("DROP TABLE IF EXISTS PART_RROBIN_INFO")
+    cur.execute("CREATE TABLE PART_RROBIN_INFO (number_of_partitions int, last_inserted_partition int)")
+    cur.execute("INSERT INTO PART_RROBIN_INFO (number_of_partitions, last_inserted_partition) VALUES (%s, %s)",
+                (str(numberofpartitions), str(last_inserted_partition)))
+
     openconnection.commit()
     cur.close()
 
