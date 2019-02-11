@@ -108,6 +108,15 @@ def roundrobinpartition(ratingstablename, numberofpartitions, openconnection):
     cur.execute("SELECT * FROM " + ratingstablename)
     rating_table = cur.fetchall()
 
+    j = 0
+
+    for i in range(0, len(rating_table)):
+        cur.execute("INSERT INTO rrobin_part" + str(j) + " (UserID,MovieID,Rating) VALUES (%s,%s,%s)",
+                    (rating_table[i][0], rating_table[i][1], rating_table[i][2]))
+        j += 1
+        if j >= numberofpartitions:
+            j = 0
+
     openconnection.commit()
     cur.close()
 
