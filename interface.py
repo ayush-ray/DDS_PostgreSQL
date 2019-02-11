@@ -97,6 +97,23 @@ def rangeinsert(ratingstablename, userid, itemid, rating, openconnection):
     pass
 
 
+def roundrobinpartition(ratingstablename, numberofpartitions, openconnection):
+    cur = openconnection.cursor()
+
+    for i in range(0, numberofpartitions):
+        cur.execute("DROP TABLE IF EXISTS rrobin_part" + str(i))
+        query = "CREATE TABLE rrobin_part" + str(i) + "(UserID int, MovieID int, Rating float)"
+        cur.execute(query)
+
+    cur.execute("SELECT * FROM " + ratingstablename)
+    rating_table = cur.fetchall()
+
+    openconnection.commit()
+    cur.close()
+
+    pass
+
+
 # Function calls
 create_db("trial_a1_1")
 con = getopenconnection()
