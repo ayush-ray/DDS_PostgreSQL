@@ -161,7 +161,7 @@ def roundrobinpartition(ratingstablename, numberofpartitions, openconnection):
 
 def roundrobininsert(ratingstablename, userid, itemid, rating, openconnection):
 
-    up_cursor_var = openconnection.cursor()
+    cursor = openconnection.cursor()
 
     # next 6 lines are to ensure that the same record is not inserted twice, this is due to a condition present in
     # testHelper.testrangerobin function
@@ -182,9 +182,25 @@ def roundrobininsert(ratingstablename, userid, itemid, rating, openconnection):
     no_of_partitions = up_rrobin_info[0][0]
     last_inserted_partition = up_rrobin_info[0][1]
     if last_inserted_partition == no_of_partitions - 1:
-        up_partition = 0
+        partition = 0
     else:
-        up_partition = (last_inserted_partition + 1)
+        partition = (last_inserted_partition + 1)
+		
+	# inserting record into appropriate fragment
+    cursor.execute(
+        "INSERT INTO rrobin_part" + str(partition) + " VALUES (" +
+        str(userid) + "," + str(itemid) + "," + str(rating) + ")")
+
+    # updating last inserted partition info into table
+    cursor.execute("UPDATE PART_RROBIN_INFO SET last_inserted_partition = "+str(partition) +
+                          " WHERE number_of_partitions = " + str(no_of_partitions))
+
+    # committing to db
+    openconnection.commit()
+
+    # Cleaning up
+    cursor.close()
+    pass
 
 # Function calls
 create_db("trial_a1_1")
