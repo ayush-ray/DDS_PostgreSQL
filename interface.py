@@ -165,16 +165,26 @@ def roundrobininsert(ratingstablename, userid, itemid, rating, openconnection):
 
     # next 6 lines are to ensure that the same record is not inserted twice, this is due to a condition present in
     # testHelper.testrangerobin function
-    up_cursor_var.execute(
+    cursor.execute(
         'SELECT COUNT(*) FROM {0} WHERE UserID = {1} AND MovieID = {2} AND Rating = {3}'.format(ratingstablename, userid
                                                                                                 , itemid, rating))
-    up_count = int(up_cursor_var.fetchone()[0])
+    count = int(cursor.fetchone()[0])
     if up_count != 0:
         return
 
     # inserting record in ratings table
-    up_cursor_var.execute("INSERT INTO " + ratingstablename + " VALUES(" +
+    cursor.execute("INSERT INTO " + ratingstablename + " VALUES(" +
                           str(userid) + "," + str(itemid) + "," + str(rating) + ")")
+
+	# finding appropriate fragment in which record is to be inserted
+    cursor.execute("SELECT * FROM PART_RROBIN_INFO")
+    up_rrobin_info = cursor.fetchall()
+    no_of_partitions = up_rrobin_info[0][0]
+    last_inserted_partition = up_rrobin_info[0][1]
+    if last_inserted_partition == no_of_partitions - 1:
+        up_partition = 0
+    else:
+        up_partition = (last_inserted_partition + 1)
 
 # Function calls
 create_db("trial_a1_1")
