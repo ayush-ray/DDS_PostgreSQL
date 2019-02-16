@@ -159,6 +159,23 @@ def roundrobinpartition(ratingstablename, numberofpartitions, openconnection):
     pass
 
 
+def roundrobininsert(ratingstablename, userid, itemid, rating, openconnection):
+
+    up_cursor_var = openconnection.cursor()
+
+    # next 6 lines are to ensure that the same record is not inserted twice, this is due to a condition present in
+    # testHelper.testrangerobin function
+    up_cursor_var.execute(
+        'SELECT COUNT(*) FROM {0} WHERE UserID = {1} AND MovieID = {2} AND Rating = {3}'.format(ratingstablename, userid
+                                                                                                , itemid, rating))
+    up_count = int(up_cursor_var.fetchone()[0])
+    if up_count != 0:
+        return
+
+    # inserting record in ratings table
+    up_cursor_var.execute("INSERT INTO " + ratingstablename + " VALUES(" +
+                          str(userid) + "," + str(itemid) + "," + str(rating) + ")")
+
 # Function calls
 create_db("trial_a1_1")
 con = getopenconnection()
