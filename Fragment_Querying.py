@@ -47,5 +47,15 @@ def PointQuery(ratingValue, openconnection, outputPath):
         for j in range_for_output:
             var_file.write("RangeRatingsPart" + str(i) + "," + str(j[0]) + "," + str(j[1]) + "," + str(j[2]) + "\n")
 
+    # getting the count of roundrobin table created by Assignment1 in DB
+    cur.execute("SELECT COUNT(*) FROM pg_stat_user_tables where relname like 'roundrobinratingspart%'")
+    metadata_rrobin = cur.fetchall()
+    for i in range(metadata_rrobin[0][0]):
+        cur.execute("SELECT * FROM RoundRobinRatingsPart" + str(i))
+        rrobinpart_for_output = cur.fetchall()
+        for j in rrobinpart_for_output:
+            if j[2] == ratingValue:
+                var_file.write("RoundRobinRatingsPart"+str(i)+","+str(j[0])+","+str(j[1])+","+str(j[2])+"\n")
+
     var_file.close()
     cur.close()
